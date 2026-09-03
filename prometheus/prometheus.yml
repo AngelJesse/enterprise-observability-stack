@@ -1,0 +1,56 @@
+# ==============================================================================
+# Prometheus Core Configuration & Scraping Targets
+# Author: Angel Jesse Guevara Silvano
+# ==============================================================================
+
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+  external_labels:
+    monitor: 'enterprise-cloud-monitor'
+    datacenter: 'eastus2'
+    environment: 'production'
+
+# Alertmanager target definition
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+# Load alert rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - 'alert_rules.yml'
+
+# A scrape configuration containing exactly the endpoints to monitor
+scrape_configs:
+  # 1. Self-Monitoring Prometheus Server
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 2. Host OS Infrastructure Metrics (Node Exporter)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          tier: 'infrastructure'
+          host: 'srv-cloud-worker-01'
+
+  # 3. Enterprise Cloud Microservice (Node.js Application Telemetry)
+  - job_name: 'enterprise-microservice'
+    metrics_path: '/api/v1/metrics'
+    scrape_interval: 3s
+    static_configs:
+      - targets: ['host.docker.internal:8080', 'app:8080']
+        labels:
+          app: 'enterprise-microservice'
+          tier: 'application'
+
+  # 4. Kubernetes Cluster Nodes & Pods
+  - job_name: 'kubernetes-cadvisor'
+    static_configs:
+      - targets: ['aks-cluster-internal:10250']
+        labels:
+          cluster: 'aks-corplab-prod-01'
+          tier: 'container-runtime'

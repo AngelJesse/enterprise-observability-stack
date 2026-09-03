@@ -1,0 +1,63 @@
+# ==============================================================================
+# Prometheus PromQL Alerting Rules (SRE Golden Signals & SLOs)
+# Author: Angel Jesse Guevara Silvano
+# ==============================================================================
+
+groups:
+  - name: SRE_Golden_Signals_Alerts
+    rules:
+
+      # 1. Service Availability Alert (Liveness)
+      - alert: ServiceDown
+        expr: up == 0
+        for: 15s
+        labels:
+          severity: critical
+          tier: platform
+        annotations:
+          summary: "Target Service Instance {{ $labels.instance }} is DOWN"
+          description: "Scrape target {{ $labels.job }} on {{ $labels.instance }} has been unreachable for more than 15 seconds."
+
+      # 2. Host CPU Saturation Alert
+      - alert: HostHighCpuUsage
+        expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)) > 85
+        for: 1m
+        labels:
+          severity: warning
+          tier: infrastructure
+        annotations:
+          summary: "Host CPU Usage Critical (> 85%) on {{ $labels.instance }}"
+          description: "CPU load on instance {{ $labels.instance }} is currently at {{ $value | printf '%.2f' }}%."
+
+      # 3. Host Memory Saturation Alert
+      - alert: HostMemorySaturation
+        expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100) > 90
+        for: 1m
+        labels:
+          severity: critical
+          tier: infrastructure
+        annotations:
+          summary: "Host Memory Saturation (> 90%) on {{ $labels.instance }}"
+          description: "Available memory on instance {{ $labels.instance }} has dropped below 10% (Usage: {{ $value | printf '%.2f' }}%)."
+
+      # 4. HTTP 5xx Error Rate Spike Alert
+      - alert: HighHttpErrorRate5xx
+        expr: (rate(http_requests_total{status=~"5.."}[2m]) / rate(http_requests_total[2m]) * 100) > 5
+        for: 30s
+        labels:
+          severity: critical
+          tier: application
+        annotations:
+          summary: "High HTTP 5xx Server Error Rate (> 5%) on {{ $labels.app }}"
+          description: "Microservice {{ $labels.app }} error rate is at {{ $value | printf '%.2f' }}% over a 2-minute window."
+
+      # 5. Disk Storage Exhaustion Alert
+      - alert: HostDiskFillingUp
+        expr: ((node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} * 100) > 85
+        for: 2m
+        labels:
+          severity: warning
+          tier: storage
+        annotations:
+          summary: "Disk Root Partition (> 85%) on {{ $labels.instance }}"
+          description: "Disk usage on {{ $labels.instance }} has reached {{ $value | printf '%.2f' }}%."

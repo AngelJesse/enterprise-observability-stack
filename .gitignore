@@ -1,0 +1,20 @@
+# Prometheus & Grafana data volumes
+data/
+prometheus_data/
+grafana_data/
+alertmanager_data/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform.lock.hcl
+
+# OS and Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
