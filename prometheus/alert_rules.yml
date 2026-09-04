@@ -27,7 +27,7 @@ groups:
           tier: infrastructure
         annotations:
           summary: "Host CPU Usage Critical (> 85%) on {{ $labels.instance }}"
-          description: "CPU load on instance {{ $labels.instance }} is currently at {{ $value | printf '%.2f' }}%."
+          description: "CPU load on instance {{ $labels.instance }} is currently above 85%."
 
       # 3. Host Memory Saturation Alert
       - alert: HostMemorySaturation
@@ -38,7 +38,7 @@ groups:
           tier: infrastructure
         annotations:
           summary: "Host Memory Saturation (> 90%) on {{ $labels.instance }}"
-          description: "Available memory on instance {{ $labels.instance }} has dropped below 10% (Usage: {{ $value | printf '%.2f' }}%)."
+          description: "Available memory on instance {{ $labels.instance }} has dropped below 10%."
 
       # 4. HTTP 5xx Error Rate Spike Alert
       - alert: HighHttpErrorRate5xx
@@ -49,7 +49,7 @@ groups:
           tier: application
         annotations:
           summary: "High HTTP 5xx Server Error Rate (> 5%) on {{ $labels.app }}"
-          description: "Microservice {{ $labels.app }} error rate is at {{ $value | printf '%.2f' }}% over a 2-minute window."
+          description: "Microservice {{ $labels.app }} error rate is above 5% over a 2-minute window."
 
       # 5. Disk Storage Exhaustion Alert
       - alert: HostDiskFillingUp
@@ -60,4 +60,4 @@ groups:
           tier: storage
         annotations:
           summary: "Disk Root Partition (> 85%) on {{ $labels.instance }}"
-          description: "Disk usage on {{ $labels.instance }} has reached {{ $value | printf '%.2f' }}%."
+          description: "Disk usage on {{ $labels.instance }} has reached over 85%."
